@@ -1,0 +1,8 @@
+keyboard:
+  name: lily58
+  shields:
+    - lily58_left
+    - lily58_right
+  shield_def:
+    CONFIG_ZMK_SPLIT_ROLE: left
+    CONFIG_ZMK_SPLIT_SERIAL: true
