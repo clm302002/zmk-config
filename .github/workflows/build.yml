@@ -1,0 +1,37 @@
+name: Build ZMK Firmware
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          submodules: recursive
+
+      - name: Set up Docker
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y docker.io
+          sudo systemctl start docker
+          sudo systemctl enable docker
+
+      - name: Build firmware
+        run: |
+          docker run --rm -v ${{ github.workspace }}:/workspace zmkfirmware/zmk-west-action:latest west build -s app -b nice_nano_v2 -- -DSHIELD=lily58_left
+          mv build/zephyr/zmk.uf2 build/lily58_left.uf2
+          docker run --rm -v ${{ github.workspace }}:/workspace zmkfirmware/zmk-west-action:latest west build -s app -b nice_nano_v2 -- -DSHIELD=lily58_right
+          mv build/zephyr/zmk.uf2 build/lily58_right.uf2
+
+      - name: Upload firmware artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: firmware
+          path: build/*.uf2
